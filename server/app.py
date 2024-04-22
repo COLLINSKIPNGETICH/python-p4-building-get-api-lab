@@ -14,37 +14,38 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
-@app.route('/')
-def index():
-    return '<h1>Bakery GET API</h1>'
-
 @app.route('/bakeries')
-def bakeries():
-    return ''
-
-@app.route('/')
-def index():
-    return '<h1>Bakery GET API</h1>'
-
-@app.route('/bakeries')
-def bakeries():
+def get_bakeries():
     bakeries = Bakery.query.all()
-    return jsonify([bakery.serialize() for bakery in bakeries])
+    result = []
+    for bakery in bakeries:
+        bakery_data = {
+            'id': bakery.id,
+            'name': bakery.name,
+            'created_at': bakery.created_at,
+            'updated_at': bakery.updated_at,
+            'baked_goods': [baked_good.serialize() for baked_good in bakery.baked_goods]
+        }
+        result.append(bakery_data)
+    return jsonify(result)
 
+# Define route to get bakery by ID
 @app.route('/bakeries/<int:id>')
-def bakery_by_id(id):
+def get_bakery_by_id(id):
     bakery = Bakery.query.get_or_404(id)
     return jsonify(bakery.serialize())
 
+# Define route to get baked goods sorted by price in descending order
 @app.route('/baked_goods/by_price')
-def baked_goods_by_price():
-    goods = BakedGood.query.order_by(BakedGood.price.desc()).all()
-    return jsonify([good.serialize() for good in goods])
+def get_baked_goods_by_price():
+    baked_goods = BakedGood.query.order_by(BakedGood.price.desc()).all()
+    return jsonify([baked_good.serialize() for baked_good in baked_goods])
 
+# Define route to get the most expensive baked good
 @app.route('/baked_goods/most_expensive')
-def most_expensive_baked_good():
-    most_expensive_good = BakedGood.query.order_by(BakedGood.price.desc()).first()
-    return jsonify(most_expensive_good.serialize())
+def get_most_expensive_baked_good():
+    most_expensive_baked_good = BakedGood.query.order_by(BakedGood.price.desc()).first()
+    return jsonify(most_expensive_baked_good.serialize())
 
 
 if __name__ == '__main__':
